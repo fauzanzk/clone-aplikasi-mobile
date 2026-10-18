@@ -188,6 +188,15 @@ CREATE TABLE IF NOT EXISTS buses (
   seats_available INT DEFAULT 24
 );
 
+CREATE TABLE IF NOT EXISTS bus_bookings (
+  booking_id INT PRIMARY KEY,
+  bus_id INT NOT NULL,
+  seat_no INT NOT NULL,
+  passenger_name VARCHAR(100),
+  FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE,
+  FOREIGN KEY (bus_id) REFERENCES buses(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS car_rentals (
   id INT AUTO_INCREMENT PRIMARY KEY,
   car_name VARCHAR(100) NOT NULL,       -- Avanza, Innova Reborn, Fortuner, HiAce

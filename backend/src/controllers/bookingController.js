@@ -14,10 +14,11 @@ const generateBookingCode = () => {
 const checkAndExpireBookings = async () => {
   try {
     const [expiredList] = await db.query(
-      `SELECT b.id, b.type, fb.flight_id, fb.seats AS flight_seats, tb.train_id, tb.seats AS train_seats
+      `SELECT b.id, b.type, fb.flight_id, fb.seats AS flight_seats, tb.train_id, tb.seats AS train_seats, bb.bus_id
        FROM bookings b
        LEFT JOIN flight_bookings fb ON fb.booking_id = b.id
        LEFT JOIN train_bookings tb ON tb.booking_id = b.id
+       LEFT JOIN bus_bookings bb ON bb.booking_id = b.id
        WHERE b.status = 'PENDING' AND b.expires_at < NOW()`
     );
 
@@ -32,6 +33,10 @@ const checkAndExpireBookings = async () => {
         await db.query(`UPDATE trains SET seats_available = seats_available + ? WHERE id = ?`, [
           exp.train_seats,
           exp.train_id
+        ]);
+      } else if (exp.type === 'BUS' && exp.bus_id) {
+        await db.query(`UPDATE buses SET seats_available = seats_available + 1 WHERE id = ?`, [
+          exp.bus_id
         ]);
       }
     }
@@ -307,6 +312,77 @@ const createTrainBooking = async (req, res) => {
   }
 };
 
+const createBusBooking = async (req, res) => {
+  const connection = await db.getConnection();
+  try {
+    const userId = req.user.id;
+    const { bus_id, seat_no = 1, passenger_name } = req.body;
+
+    if (!bus_id) {
+      return res.status(400).json({ success: false, message: 'ID armada bus wajib disertakan.' });
+    }
+
+    await connection.beginTransaction();
+
+    // 1. Lock bus row and check seats
+    const [busRows] = await connection.query(
+      'SELECT id, operator_name, bus_class, origin_city, dest_city, price, seats_available FROM buses WHERE id = ? FOR UPDATE',
+      [bus_id]
+    );
+
+    if (busRows.length === 0) {
+      await connection.rollback();
+      return res.status(404).json({ success: false, message: 'Jadwal bus tidak ditemukan.' });
+    }
+
+    const bus = busRows[0];
+    if (bus.seats_available < 1) {
+      await connection.rollback();
+      return res.status(400).json({ success: false, message: 'Maaf, semua kursi bus ini sudah penuh.' });
+    }
+
+    // 2. Decrement seat
+    await connection.query('UPDATE buses SET seats_available = seats_available - 1 WHERE id = ?', [bus_id]);
+
+    // 3. Create booking
+    const bookingCode = generateBookingCode();
+    const totalPrice = bus.price;
+    const [bookingResult] = await connection.query(
+      `INSERT INTO bookings (code, user_id, type, total_price, status, expires_at)
+       VALUES (?, ?, 'BUS', ?, 'PENDING', DATE_ADD(NOW(), INTERVAL 1 HOUR))`,
+      [bookingCode, userId, totalPrice]
+    );
+
+    const bookingId = bookingResult.insertId;
+
+    // 4. Create bus_bookings row
+    await connection.query(
+      'INSERT INTO bus_bookings (booking_id, bus_id, seat_no, passenger_name) VALUES (?, ?, ?, ?)',
+      [bookingId, bus_id, seat_no, passenger_name || req.user.name || 'Penumpang Bus']
+    );
+
+    await connection.commit();
+
+    return res.status(201).json({
+      success: true,
+      message: 'Pesanan tiket bus berhasil dibuat.',
+      data: {
+        booking_id: bookingId,
+        code: bookingCode,
+        total_price: totalPrice,
+        status: 'PENDING',
+        expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString()
+      }
+    });
+  } catch (err) {
+    await connection.rollback();
+    console.error('Create bus booking error:', err);
+    return res.status(500).json({ success: false, message: 'Gagal membuat pesanan bus.' });
+  } finally {
+    connection.release();
+  }
+};
+
 const payBooking = async (req, res) => {
   try {
     const { id } = req.params;
@@ -362,10 +438,11 @@ const cancelBooking = async (req, res) => {
     await connection.beginTransaction();
 
     const [rows] = await connection.query(
-      `SELECT b.*, fb.flight_id, fb.seats AS flight_seats, tb.train_id, tb.seats AS train_seats
+      `SELECT b.*, fb.flight_id, fb.seats AS flight_seats, tb.train_id, tb.seats AS train_seats, bb.bus_id
        FROM bookings b
        LEFT JOIN flight_bookings fb ON fb.booking_id = b.id
        LEFT JOIN train_bookings tb ON tb.booking_id = b.id
+       LEFT JOIN bus_bookings bb ON bb.booking_id = b.id
        WHERE b.id = ? AND b.user_id = ? FOR UPDATE`,
       [id, userId]
     );
@@ -384,7 +461,7 @@ const cancelBooking = async (req, res) => {
     // Cancel booking
     await connection.query("UPDATE bookings SET status = 'CANCELLED' WHERE id = ?", [id]);
 
-    // Restore seats if it was flight or train booking
+    // Restore seats if it was flight, train or bus booking
     if (booking.type === 'FLIGHT' && booking.flight_id && booking.flight_seats) {
       await connection.query('UPDATE flights SET seats_available = seats_available + ? WHERE id = ?', [
         booking.flight_seats,
@@ -394,6 +471,10 @@ const cancelBooking = async (req, res) => {
       await connection.query('UPDATE trains SET seats_available = seats_available + ? WHERE id = ?', [
         booking.train_seats,
         booking.train_id
+      ]);
+    } else if (booking.type === 'BUS' && booking.bus_id) {
+      await connection.query('UPDATE buses SET seats_available = seats_available + 1 WHERE id = ?', [
+        booking.bus_id
       ]);
     }
 
@@ -425,19 +506,20 @@ const getUserBookings = async (req, res) => {
       SELECT 
         b.id, b.code, b.type, b.total_price, b.status, b.payment_method,
         b.paid_at, b.expires_at, b.created_at,
-        -- Flight or Train details
-        COALESCE(f.airline, t.train_name) AS airline,
-        COALESCE(f.flight_no, t.train_no) AS flight_no,
-        COALESCE(f.depart_at, t.depart_at) AS depart_at,
-        COALESCE(f.arrive_at, t.arrive_at) AS arrive_at,
-        COALESCE(o.code, so.code) AS origin_code,
-        COALESCE(o.name, so.name) AS origin_name,
-        COALESCE(oc.name, soc.name) AS origin_city,
-        COALESCE(d.code, sd.code) AS dest_code,
-        COALESCE(d.name, sd.name) AS dest_name,
-        COALESCE(dc.name, sdc.name) AS dest_city,
-        COALESCE(fb.seats, tb.seats) AS flight_seats,
-        t.class_type AS train_class,
+        -- Flight, Train or Bus details
+        COALESCE(f.airline, t.train_name, bs.operator_name) AS airline,
+        COALESCE(f.flight_no, t.train_no, bs.bus_class) AS flight_no,
+        COALESCE(f.depart_at, t.depart_at, CONCAT(CURDATE(), ' ', bs.departure_time, ':00')) AS depart_at,
+        COALESCE(f.arrive_at, t.arrive_at, CONCAT(CURDATE(), ' ', bs.arrival_time, ':00')) AS arrive_at,
+        COALESCE(o.code, so.code, bs.origin_city) AS origin_code,
+        COALESCE(o.name, so.name, bs.origin_city) AS origin_name,
+        COALESCE(oc.name, soc.name, bs.origin_city) AS origin_city,
+        COALESCE(d.code, sd.code, bs.dest_city) AS dest_code,
+        COALESCE(d.name, sd.name, bs.dest_city) AS dest_name,
+        COALESCE(dc.name, sdc.name, bs.dest_city) AS dest_city,
+        COALESCE(fb.seats, tb.seats, 1) AS flight_seats,
+        COALESCE(t.class_type, bs.bus_class) AS train_class,
+        bb.seat_no AS bus_seat_no,
         -- Hotel details if hotel
         h.id AS hotel_id, h.name AS hotel_name, h.image_url AS hotel_image, h.star AS hotel_star,
         hc.name AS hotel_city,
@@ -456,6 +538,8 @@ const getUserBookings = async (req, res) => {
       LEFT JOIN cities soc ON soc.id = so.city_id
       LEFT JOIN stations sd ON sd.id = t.destination_id
       LEFT JOIN cities sdc ON sdc.id = sd.city_id
+      LEFT JOIN bus_bookings bb ON bb.booking_id = b.id
+      LEFT JOIN buses bs ON bs.id = bb.bus_id
       LEFT JOIN hotel_bookings hb ON hb.booking_id = b.id
       LEFT JOIN room_types rt ON rt.id = hb.room_type_id
       LEFT JOIN hotels h ON h.id = rt.hotel_id
@@ -490,20 +574,21 @@ const getBookingDetail = async (req, res) => {
       `SELECT 
         b.id, b.code, b.type, b.total_price, b.status, b.payment_method,
         b.paid_at, b.expires_at, b.created_at,
-        -- Flight or Train details
-        COALESCE(f.airline, t.train_name) AS airline,
-        COALESCE(f.flight_no, t.train_no) AS flight_no,
-        COALESCE(f.depart_at, t.depart_at) AS depart_at,
-        COALESCE(f.arrive_at, t.arrive_at) AS arrive_at,
-        COALESCE(f.price, t.price) AS flight_unit_price,
-        COALESCE(o.code, so.code) AS origin_code,
-        COALESCE(o.name, so.name) AS origin_name,
-        COALESCE(oc.name, soc.name) AS origin_city,
-        COALESCE(d.code, sd.code) AS dest_code,
-        COALESCE(d.name, sd.name) AS dest_name,
-        COALESCE(dc.name, sdc.name) AS dest_city,
-        COALESCE(fb.seats, tb.seats) AS flight_seats,
-        t.class_type AS train_class,
+        -- Flight, Train or Bus details
+        COALESCE(f.airline, t.train_name, bs.operator_name) AS airline,
+        COALESCE(f.flight_no, t.train_no, bs.bus_class) AS flight_no,
+        COALESCE(f.depart_at, t.depart_at, CONCAT(CURDATE(), ' ', bs.departure_time, ':00')) AS depart_at,
+        COALESCE(f.arrive_at, t.arrive_at, CONCAT(CURDATE(), ' ', bs.arrival_time, ':00')) AS arrive_at,
+        COALESCE(f.price, t.price, bs.price) AS flight_unit_price,
+        COALESCE(o.code, so.code, bs.origin_city) AS origin_code,
+        COALESCE(o.name, so.name, bs.origin_city) AS origin_name,
+        COALESCE(oc.name, soc.name, bs.origin_city) AS origin_city,
+        COALESCE(d.code, sd.code, bs.dest_city) AS dest_code,
+        COALESCE(d.name, sd.name, bs.dest_city) AS dest_name,
+        COALESCE(dc.name, sdc.name, bs.dest_city) AS dest_city,
+        COALESCE(fb.seats, tb.seats, 1) AS flight_seats,
+        COALESCE(t.class_type, bs.bus_class) AS train_class,
+        bb.seat_no AS bus_seat_no,
         -- Hotel details
         h.id AS hotel_id, h.name AS hotel_name, h.image_url AS hotel_image, h.star AS hotel_star,
         h.address AS hotel_address,
@@ -523,6 +608,8 @@ const getBookingDetail = async (req, res) => {
       LEFT JOIN cities soc ON soc.id = so.city_id
       LEFT JOIN stations sd ON sd.id = t.destination_id
       LEFT JOIN cities sdc ON sdc.id = sd.city_id
+      LEFT JOIN bus_bookings bb ON bb.booking_id = b.id
+      LEFT JOIN buses bs ON bs.id = bb.bus_id
       LEFT JOIN hotel_bookings hb ON hb.booking_id = b.id
       LEFT JOIN room_types rt ON rt.id = hb.room_type_id
       LEFT JOIN hotels h ON h.id = rt.hotel_id
@@ -544,6 +631,19 @@ const getBookingDetail = async (req, res) => {
         [id]
       );
       booking.passengers = passengers;
+    } else if (booking.type === 'BUS') {
+      const [busBookingRows] = await db.query(
+        'SELECT seat_no, passenger_name FROM bus_bookings WHERE booking_id = ?',
+        [id]
+      );
+      if (busBookingRows.length > 0) {
+        booking.bus_seat_no = busBookingRows[0].seat_no;
+        booking.passengers = [{
+          title: 'Tn',
+          full_name: busBookingRows[0].passenger_name || 'Penumpang',
+          id_number: 'Kursi #' + busBookingRows[0].seat_no
+        }];
+      }
     }
 
     // QR Data string for e-ticket / voucher
@@ -566,6 +666,7 @@ module.exports = {
   createFlightBooking,
   createHotelBooking,
   createTrainBooking,
+  createBusBooking,
   payBooking,
   cancelBooking,
   getUserBookings,

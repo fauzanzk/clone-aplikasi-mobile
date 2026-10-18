@@ -4,6 +4,7 @@ const {
   createFlightBooking,
   createHotelBooking,
   createTrainBooking,
+  createBusBooking,
   payBooking,
   cancelBooking,
   getUserBookings,
@@ -17,6 +18,7 @@ router.use(authMiddleware);
 router.post('/flight', createFlightBooking);
 router.post('/hotel', createHotelBooking);
 router.post('/train', createTrainBooking);
+router.post('/bus', createBusBooking);
 router.post('/:id/pay', payBooking);
 router.post('/:id/cancel', cancelBooking);
 router.get('/', getUserBookings);

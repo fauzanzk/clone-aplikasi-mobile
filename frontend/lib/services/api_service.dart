@@ -372,6 +372,24 @@ class ApiService {
     return jsonDecode(res.body);
   }
 
+  Future<Map<String, dynamic>> createBusBooking({
+    required int busId,
+    required int seatNo,
+    String? passengerName,
+  }) async {
+    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.busBooking}');
+    final res = await http.post(
+      url,
+      headers: _headers(),
+      body: jsonEncode({
+        'bus_id': busId,
+        'seat_no': seatNo,
+        if (passengerName != null) 'passenger_name': passengerName,
+      }),
+    );
+    return jsonDecode(res.body);
+  }
+
   // Other Services: Buses, Attractions, Cars, Insurances
   Future<List<BusModel>> getBuses({String? origin, String? dest}) async {
     final queryParams = <String, String>{};

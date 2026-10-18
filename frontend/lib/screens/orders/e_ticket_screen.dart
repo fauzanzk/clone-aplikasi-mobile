@@ -55,26 +55,35 @@ class _ETicketScreenState extends State<ETicketScreen> {
     final booking = _booking!;
     final isFlight = booking.type == 'FLIGHT';
     final isTrain = booking.type == 'TRAIN';
+    final isBus = booking.type == 'BUS';
 
     String screenTitle = 'Voucher Hotel Resmi';
     Color headerBg = AppColors.secondary;
     IconData headerIcon = Icons.hotel;
+    Color screenBg = const Color(0xFF0064D2);
 
     if (isFlight) {
       screenTitle = 'E-Tiket Penerbangan Resmi';
       headerBg = AppColors.primary;
       headerIcon = Icons.flight_takeoff;
+      screenBg = const Color(0xFF0064D2);
     } else if (isTrain) {
       screenTitle = 'E-Tiket Kereta Api Resmi';
       headerBg = const Color(0xFFED6B00);
       headerIcon = Icons.train_rounded;
+      screenBg = const Color(0xFFC85A00);
+    } else if (isBus) {
+      screenTitle = 'E-Tiket Bus & Shuttle Resmi';
+      headerBg = const Color(0xFF1E824C);
+      headerIcon = Icons.directions_bus_rounded;
+      screenBg = const Color(0xFF145A32);
     }
 
     return Scaffold(
-      backgroundColor: isTrain ? const Color(0xFFC85A00) : const Color(0xFF0064D2),
+      backgroundColor: screenBg,
       appBar: AppBar(
         title: Text(screenTitle),
-        backgroundColor: isTrain ? const Color(0xFFC85A00) : const Color(0xFF0064D2),
+        backgroundColor: screenBg,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -180,9 +189,9 @@ class _ETicketScreenState extends State<ETicketScreen> {
                       Container(
                         width: 14,
                         height: 28,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF0064D2),
-                          borderRadius: BorderRadius.horizontal(right: Radius.circular(14)),
+                        decoration: BoxDecoration(
+                          color: screenBg,
+                          borderRadius: const BorderRadius.horizontal(right: Radius.circular(14)),
                         ),
                       ),
                       Expanded(
@@ -207,9 +216,9 @@ class _ETicketScreenState extends State<ETicketScreen> {
                       Container(
                         width: 14,
                         height: 28,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF0064D2),
-                          borderRadius: BorderRadius.horizontal(left: Radius.circular(14)),
+                        decoration: BoxDecoration(
+                          color: screenBg,
+                          borderRadius: const BorderRadius.horizontal(left: Radius.circular(14)),
                         ),
                       ),
                     ],
@@ -218,7 +227,7 @@ class _ETicketScreenState extends State<ETicketScreen> {
                   // Product Details
                   Padding(
                     padding: const EdgeInsets.all(20),
-                    child: (isFlight || isTrain) ? _buildFlightDetails(booking) : _buildHotelDetails(booking),
+                    child: (isFlight || isTrain || isBus) ? _buildFlightDetails(booking) : _buildHotelDetails(booking),
                   ),
 
                   // QR Code Section

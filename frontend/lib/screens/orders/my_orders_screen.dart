@@ -200,6 +200,7 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> with SingleTickerProvid
 
     final isFlight = booking.type == 'FLIGHT';
     final isTrain = booking.type == 'TRAIN';
+    final isBus = booking.type == 'BUS';
 
     IconData typeIcon = Icons.hotel;
     Color typeColor = AppColors.secondary;
@@ -213,6 +214,10 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> with SingleTickerProvid
       typeIcon = Icons.train_rounded;
       typeColor = const Color(0xFFED6B00);
       typeLabel = 'Tiket Kereta Api';
+    } else if (isBus) {
+      typeIcon = Icons.directions_bus_rounded;
+      typeColor = const Color(0xFF1E824C);
+      typeLabel = 'Tiket Bus & Travel';
     }
 
     return Card(

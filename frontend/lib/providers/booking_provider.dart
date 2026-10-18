@@ -137,6 +137,32 @@ class BookingProvider with ChangeNotifier {
     }
   }
 
+  Future<Map<String, dynamic>> createBusBooking({
+    required int busId,
+    required int seatNo,
+    String? passengerName,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final res = await _apiService.createBusBooking(
+        busId: busId,
+        seatNo: seatNo,
+        passengerName: passengerName,
+      );
+      _isLoading = false;
+      notifyListeners();
+      return res;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return {'success': false, 'message': e.toString()};
+    }
+  }
+
   Future<bool> payBooking(int bookingId, String paymentMethod) async {
     _isLoading = true;
     notifyListeners();

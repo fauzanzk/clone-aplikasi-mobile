@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../constants/theme.dart';
 import '../../models/service_models.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/booking_provider.dart';
 import '../../services/api_service.dart';
 import '../../widgets/custom_button.dart';
+import '../auth/login_screen.dart';
+import '../payment/payment_screen.dart';
 
 class BusSearchScreen extends StatefulWidget {
   const BusSearchScreen({super.key});
@@ -38,6 +43,7 @@ class _BusSearchScreenState extends State<BusSearchScreen> {
 
   void _showBookingSheet(BusModel bus) {
     int selectedSeat = 12;
+    bool isBooking = false;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -152,19 +158,71 @@ class _BusSearchScreenState extends State<BusSearchScreen> {
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF2E7D32),
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
-                        onPressed: () {
-                          Navigator.pop(ctx);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Kursi #$selectedSeat ${bus.operatorName} berhasil dipesan!'),
-                              backgroundColor: AppColors.success,
-                            ),
-                          );
-                        },
-                        child: const Text('Konfirmasi & Pesan', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                        onPressed: isBooking
+                            ? null
+                            : () async {
+                                final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                                if (!authProvider.isLoggedIn) {
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Silakan login terlebih dahulu untuk memesan tiket bus.'),
+                                      backgroundColor: AppColors.warning,
+                                    ),
+                                  );
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                                  );
+                                  return;
+                                }
+
+                                setSheetState(() => isBooking = true);
+                                final bookingProvider = Provider.of<BookingProvider>(context, listen: false);
+                                final res = await bookingProvider.createBusBooking(
+                                  busId: bus.id,
+                                  seatNo: selectedSeat,
+                                  passengerName: authProvider.user?.name ?? 'Penumpang Bus',
+                                );
+
+                                if (!mounted) return;
+                                setSheetState(() => isBooking = false);
+
+                                if (res['success'] == true) {
+                                  Navigator.pop(ctx);
+                                  final bookingData = res['data'];
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => PaymentScreen(
+                                        bookingId: bookingData['booking_id'],
+                                        bookingCode: bookingData['code'],
+                                        totalPrice: double.parse(bookingData['total_price'].toString()),
+                                        type: 'BUS',
+                                        title: '${bus.operatorName} (${bus.busClass})',
+                                        subtitle: '${bus.originCity} ➔ ${bus.destCity} • Kursi #$selectedSeat',
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(res['message'] ?? 'Gagal membuat pesanan bus.'),
+                                      backgroundColor: AppColors.danger,
+                                    ),
+                                  );
+                                }
+                              },
+                        child: isBooking
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              )
+                            : const Text('Lanjut ke Pembayaran', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
                       ),
                     ],
                   ),
@@ -377,19 +435,43 @@ class _BusSearchScreenState extends State<BusSearchScreen> {
     final isSelected = _selectedRoute == label;
     return Padding(
       padding: const EdgeInsets.only(right: 8),
-      child: ChoiceChip(
-        label: Text(label),
-        labelStyle: TextStyle(
-          color: isSelected ? const Color(0xFF1E824C) : Colors.white,
-          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-          fontSize: 12,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            setState(() => _selectedRoute = label);
+          },
+          borderRadius: BorderRadius.circular(20),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: isSelected ? Colors.white : Colors.white.withOpacity(0.18),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isSelected ? Colors.white : Colors.white.withOpacity(0.45),
+                width: 1.2,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isSelected) ...[
+                  const Icon(Icons.check, size: 14, color: Color(0xFF1E824C)),
+                  const SizedBox(width: 4),
+                ],
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: isSelected ? const Color(0xFF1E824C) : Colors.white,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        selected: isSelected,
-        selectedColor: Colors.white,
-        backgroundColor: Colors.white.withOpacity(0.2),
-        onSelected: (_) {
-          setState(() => _selectedRoute = label);
-        },
       ),
     );
   }
