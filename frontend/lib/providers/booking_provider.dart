@@ -163,6 +163,36 @@ class BookingProvider with ChangeNotifier {
     }
   }
 
+  Future<Map<String, dynamic>> createServiceBooking({
+    required String serviceType,
+    required String itemName,
+    String? itemSubtitle,
+    required double totalPrice,
+    dynamic details,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final res = await _apiService.createServiceBooking(
+        serviceType: serviceType,
+        itemName: itemName,
+        itemSubtitle: itemSubtitle,
+        totalPrice: totalPrice,
+        details: details,
+      );
+      _isLoading = false;
+      notifyListeners();
+      return res;
+    } catch (e) {
+      _isLoading = false;
+      _errorMessage = e.toString();
+      notifyListeners();
+      return {'success': false, 'message': e.toString()};
+    }
+  }
+
   Future<bool> payBooking(int bookingId, String paymentMethod) async {
     _isLoading = true;
     notifyListeners();

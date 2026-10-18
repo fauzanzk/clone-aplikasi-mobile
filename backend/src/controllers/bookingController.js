@@ -383,6 +383,71 @@ const createBusBooking = async (req, res) => {
   }
 };
 
+const createServiceBooking = async (req, res) => {
+  const connection = await db.getConnection();
+  try {
+    const userId = req.user.id;
+    const { service_type, item_name, item_subtitle, total_price, details } = req.body;
+
+    if (!service_type || !item_name || total_price === undefined || total_price === null) {
+      return res.status(400).json({ success: false, message: 'Data pesanan layanan tidak lengkap.' });
+    }
+
+    const priceNum = parseFloat(total_price);
+    if (isNaN(priceNum) || priceNum <= 0) {
+      return res.status(400).json({ success: false, message: 'Harga total tidak valid.' });
+    }
+
+    await connection.beginTransaction();
+
+    const bookingCode = generateBookingCode();
+    const typeUpper = service_type.toUpperCase();
+
+    const [bookingResult] = await connection.query(
+      `INSERT INTO bookings (code, user_id, type, total_price, status, expires_at)
+       VALUES (?, ?, ?, ?, 'PENDING', DATE_ADD(NOW(), INTERVAL 1 HOUR))`,
+      [bookingCode, userId, typeUpper, priceNum]
+    );
+
+    const bookingId = bookingResult.insertId;
+
+    await connection.query(
+      `INSERT INTO service_bookings (booking_id, service_type, item_name, item_subtitle, details)
+       VALUES (?, ?, ?, ?, ?)`,
+      [
+        bookingId,
+        typeUpper,
+        item_name,
+        item_subtitle || '',
+        details ? JSON.stringify(details) : null
+      ]
+    );
+
+    await connection.commit();
+
+    return res.status(201).json({
+      success: true,
+      message: `Pesanan ${item_name} berhasil dibuat. Silakan selesaikan pembayaran.`,
+      data: {
+        booking_id: bookingId,
+        code: bookingCode,
+        total_price: priceNum,
+        type: typeUpper,
+        item_name,
+        item_subtitle: item_subtitle || '',
+        status: 'PENDING',
+        expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString()
+      }
+    });
+  } catch (err) {
+    await connection.rollback();
+    console.error('Create service booking error:', err);
+    return res.status(500).json({ success: false, message: 'Gagal membuat pesanan layanan.' });
+  } finally {
+    connection.release();
+  }
+};
+
 const payBooking = async (req, res) => {
   try {
     const { id } = req.params;
@@ -524,7 +589,11 @@ const getUserBookings = async (req, res) => {
         h.id AS hotel_id, h.name AS hotel_name, h.image_url AS hotel_image, h.star AS hotel_star,
         hc.name AS hotel_city,
         rt.name AS room_name,
-        hb.check_in, hb.check_out, hb.rooms AS hotel_rooms, hb.guests AS hotel_guests, hb.guest_name
+        hb.check_in, hb.check_out, hb.rooms AS hotel_rooms, hb.guests AS hotel_guests, hb.guest_name,
+        -- Service details
+        sb.item_name,
+        sb.item_subtitle,
+        sb.details AS service_details
       FROM bookings b
       LEFT JOIN flight_bookings fb ON fb.booking_id = b.id
       LEFT JOIN flights f ON f.id = fb.flight_id
@@ -544,6 +613,7 @@ const getUserBookings = async (req, res) => {
       LEFT JOIN room_types rt ON rt.id = hb.room_type_id
       LEFT JOIN hotels h ON h.id = rt.hotel_id
       LEFT JOIN cities hc ON hc.id = h.city_id
+      LEFT JOIN service_bookings sb ON sb.booking_id = b.id
       WHERE b.user_id = ?
     `;
     const params = [userId];
@@ -575,8 +645,8 @@ const getBookingDetail = async (req, res) => {
         b.id, b.code, b.type, b.total_price, b.status, b.payment_method,
         b.paid_at, b.expires_at, b.created_at,
         -- Flight, Train or Bus details
-        COALESCE(f.airline, t.train_name, bs.operator_name) AS airline,
-        COALESCE(f.flight_no, t.train_no, bs.bus_class) AS flight_no,
+        COALESCE(f.airline, t.train_name, bs.operator_name, sb.item_name) AS airline,
+        COALESCE(f.flight_no, t.train_no, bs.bus_class, sb.item_subtitle) AS flight_no,
         COALESCE(f.depart_at, t.depart_at, CONCAT(CURDATE(), ' ', bs.departure_time, ':00')) AS depart_at,
         COALESCE(f.arrive_at, t.arrive_at, CONCAT(CURDATE(), ' ', bs.arrival_time, ':00')) AS arrive_at,
         COALESCE(f.price, t.price, bs.price) AS flight_unit_price,
@@ -594,7 +664,11 @@ const getBookingDetail = async (req, res) => {
         h.address AS hotel_address,
         hc.name AS hotel_city,
         rt.name AS room_name, rt.price_per_night,
-        hb.check_in, hb.check_out, hb.rooms AS hotel_rooms, hb.guests AS hotel_guests, hb.guest_name
+        hb.check_in, hb.check_out, hb.rooms AS hotel_rooms, hb.guests AS hotel_guests, hb.guest_name,
+        -- Service details
+        sb.item_name,
+        sb.item_subtitle,
+        sb.details AS service_details
       FROM bookings b
       LEFT JOIN flight_bookings fb ON fb.booking_id = b.id
       LEFT JOIN flights f ON f.id = fb.flight_id
@@ -614,6 +688,7 @@ const getBookingDetail = async (req, res) => {
       LEFT JOIN room_types rt ON rt.id = hb.room_type_id
       LEFT JOIN hotels h ON h.id = rt.hotel_id
       LEFT JOIN cities hc ON hc.id = h.city_id
+      LEFT JOIN service_bookings sb ON sb.booking_id = b.id
       WHERE b.id = ? AND b.user_id = ?`,
       [id, userId]
     );
@@ -644,6 +719,14 @@ const getBookingDetail = async (req, res) => {
           id_number: 'Kursi #' + busBookingRows[0].seat_no
         }];
       }
+    } else if (['XPERIENCE', 'CAR_RENTAL', 'AIRPORT_TRANSFER', 'INSURANCE'].includes(booking.type)) {
+      if (booking.service_details && typeof booking.service_details === 'string') {
+        try {
+          booking.service_details = JSON.parse(booking.service_details);
+        } catch (e) {
+          // keep as string
+        }
+      }
     }
 
     // QR Data string for e-ticket / voucher
@@ -667,6 +750,7 @@ module.exports = {
   createHotelBooking,
   createTrainBooking,
   createBusBooking,
+  createServiceBooking,
   payBooking,
   cancelBooking,
   getUserBookings,

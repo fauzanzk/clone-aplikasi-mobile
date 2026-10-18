@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../constants/theme.dart';
 import '../../models/service_models.dart';
 import '../../services/api_service.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/booking_provider.dart';
+import '../auth/login_screen.dart';
+import '../payment/payment_screen.dart';
 
 class CarRentalScreen extends StatefulWidget {
   const CarRentalScreen({super.key});
@@ -37,6 +42,7 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
 
   void _showRentalSheet(CarRentalModel car) {
     int rentalDays = 1;
+    bool isBooking = false;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -92,12 +98,12 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
                         children: [
                           IconButton(
                             icon: const Icon(Icons.remove_circle_outline, color: AppColors.primary),
-                            onPressed: rentalDays > 1 ? () => setSheetState(() => rentalDays--) : null,
+                            onPressed: (rentalDays > 1 && !isBooking) ? () => setSheetState(() => rentalDays--) : null,
                           ),
                           Text('$rentalDays Hari', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
                           IconButton(
                             icon: const Icon(Icons.add_circle_outline, color: AppColors.primary),
-                            onPressed: rentalDays < 14 ? () => setSheetState(() => rentalDays++) : null,
+                            onPressed: (rentalDays < 14 && !isBooking) ? () => setSheetState(() => rentalDays++) : null,
                           ),
                         ],
                       ),
@@ -154,16 +160,78 @@ class _CarRentalScreenState extends State<CarRentalScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
-                        onPressed: () {
-                          Navigator.pop(ctx);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Sewa ${car.carName} selama $rentalDays hari berhasil diajukan!'),
-                              backgroundColor: AppColors.success,
-                            ),
-                          );
-                        },
-                        child: const Text('Sewa Sekarang', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                        onPressed: isBooking
+                            ? null
+                            : () async {
+                                final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                                if (!authProvider.isLoggedIn) {
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Silakan login terlebih dahulu untuk menyewa mobil.'),
+                                      backgroundColor: AppColors.warning,
+                                    ),
+                                  );
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+                                  return;
+                                }
+
+                                setSheetState(() => isBooking = true);
+                                final bookingProvider = Provider.of<BookingProvider>(context, listen: false);
+                                final subtitle = '${car.providerName} • ${car.transmission} • ${_withDriver ? "Dengan Sopir" : "Lepas Kunci"} • $rentalDays Hari';
+                                final res = await bookingProvider.createServiceBooking(
+                                  serviceType: 'CAR_RENTAL',
+                                  itemName: car.carName,
+                                  itemSubtitle: subtitle,
+                                  totalPrice: dayTotal.toDouble(),
+                                  details: {
+                                    'car_id': car.id,
+                                    'car_name': car.carName,
+                                    'provider_name': car.providerName,
+                                    'transmission': car.transmission,
+                                    'capacity': car.capacity,
+                                    'rental_days': rentalDays,
+                                    'with_driver': _withDriver,
+                                    'driver_fee': driverFee,
+                                    'image_url': car.imageUrl,
+                                  },
+                                );
+
+                                if (!mounted) return;
+                                setSheetState(() => isBooking = false);
+
+                                if (res['success'] == true) {
+                                  Navigator.pop(ctx);
+                                  final bookingData = res['data'];
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => PaymentScreen(
+                                        bookingId: bookingData['booking_id'],
+                                        bookingCode: bookingData['code'],
+                                        totalPrice: double.parse(bookingData['total_price'].toString()),
+                                        type: 'CAR_RENTAL',
+                                        title: car.carName,
+                                        subtitle: subtitle,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(res['message'] ?? 'Gagal membuat pesanan sewa mobil.'),
+                                      backgroundColor: AppColors.danger,
+                                    ),
+                                  );
+                                }
+                              },
+                        child: isBooking
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              )
+                            : const Text('Sewa Sekarang', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
                       ),
                     ],
                   ),

@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS bookings (
   id INT AUTO_INCREMENT PRIMARY KEY,
   code VARCHAR(12) NOT NULL UNIQUE,     -- kode booking acak
   user_id INT NOT NULL,
-  type VARCHAR(10) NOT NULL,            -- 'FLIGHT' | 'HOTEL'
+  type VARCHAR(30) NOT NULL,            -- 'FLIGHT' | 'HOTEL' | 'TRAIN' | 'BUS' | 'XPERIENCE' | 'CAR_RENTAL' | 'AIRPORT_TRANSFER' | 'INSURANCE'
   total_price DECIMAL(14,2) NOT NULL,
   status VARCHAR(10) NOT NULL DEFAULT 'PENDING',  -- PENDING | PAID | CANCELLED | EXPIRED
   payment_method VARCHAR(30),
@@ -214,4 +214,13 @@ CREATE TABLE IF NOT EXISTS insurances (
   max_coverage DECIMAL(14,2) NOT NULL,
   price DECIMAL(12,2) NOT NULL,
   benefits JSON
+);
+
+CREATE TABLE IF NOT EXISTS service_bookings (
+  booking_id INT PRIMARY KEY,
+  service_type VARCHAR(30) NOT NULL,    -- 'XPERIENCE' | 'CAR_RENTAL' | 'AIRPORT_TRANSFER' | 'INSURANCE'
+  item_name VARCHAR(150) NOT NULL,
+  item_subtitle VARCHAR(255),
+  details JSON,
+  FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE
 );

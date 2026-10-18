@@ -201,6 +201,10 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> with SingleTickerProvid
     final isFlight = booking.type == 'FLIGHT';
     final isTrain = booking.type == 'TRAIN';
     final isBus = booking.type == 'BUS';
+    final isXperience = booking.type == 'XPERIENCE';
+    final isCarRental = booking.type == 'CAR_RENTAL';
+    final isAirportTransfer = booking.type == 'AIRPORT_TRANSFER';
+    final isInsurance = booking.type == 'INSURANCE';
 
     IconData typeIcon = Icons.hotel;
     Color typeColor = AppColors.secondary;
@@ -218,6 +222,42 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> with SingleTickerProvid
       typeIcon = Icons.directions_bus_rounded;
       typeColor = const Color(0xFF1E824C);
       typeLabel = 'Tiket Bus & Travel';
+    } else if (isXperience) {
+      typeIcon = Icons.attractions_rounded;
+      typeColor = const Color(0xFFE91E63);
+      typeLabel = 'Voucher Xperience';
+    } else if (isCarRental) {
+      typeIcon = Icons.directions_car_rounded;
+      typeColor = const Color(0xFF0097A7);
+      typeLabel = 'Sewa Mobil';
+    } else if (isAirportTransfer) {
+      typeIcon = Icons.airport_shuttle_rounded;
+      typeColor = const Color(0xFF3F51B5);
+      typeLabel = 'Antar Bandara';
+    } else if (isInsurance) {
+      typeIcon = Icons.health_and_safety_rounded;
+      typeColor = const Color(0xFF00897B);
+      typeLabel = 'Asuransi Perjalanan';
+    }
+
+    String itemTitle = 'Pesanan';
+    String itemSubtitle = '';
+
+    if (isFlight) {
+      itemTitle = '${booking.airline ?? 'Pesawat'} (${booking.flightNo ?? '-'})';
+      itemSubtitle = '${booking.originCity ?? booking.originCode} ➔ ${booking.destCity ?? booking.destCode}';
+    } else if (isTrain) {
+      itemTitle = '${booking.airline ?? 'Kereta Api'} (${booking.flightNo ?? 'KAI'})';
+      itemSubtitle = '${booking.originCity ?? booking.originCode} ➔ ${booking.destCity ?? booking.destCode}';
+    } else if (isBus) {
+      itemTitle = '${booking.airline ?? 'Bus & Travel'} (${booking.flightNo ?? 'Armada'})';
+      itemSubtitle = '${booking.originCity ?? booking.originCode} ➔ ${booking.destCity ?? booking.destCode}';
+    } else if (isXperience || isCarRental || isAirportTransfer || isInsurance) {
+      itemTitle = booking.itemName ?? booking.airline ?? typeLabel;
+      itemSubtitle = booking.itemSubtitle ?? booking.flightNo ?? '';
+    } else {
+      itemTitle = booking.hotelName ?? 'Hotel';
+      itemSubtitle = '${booking.roomName ?? 'Kamar'} • ${booking.hotelRooms ?? 1} Kamar';
     }
 
     return Card(
@@ -279,20 +319,16 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> with SingleTickerProvid
             ),
             const SizedBox(height: 6),
             Text(
-              isFlight
-                  ? '${booking.airline ?? 'Pesawat'} (${booking.flightNo ?? '-'})'
-                  : isTrain
-                      ? '${booking.airline ?? 'Kereta Api'} (${booking.flightNo ?? 'KAI'})'
-                      : (booking.hotelName ?? 'Hotel'),
+              itemTitle,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
             ),
-            const SizedBox(height: 4),
-            Text(
-              (isFlight || isTrain)
-                  ? '${booking.originCity ?? booking.originCode} ➔ ${booking.destCity ?? booking.destCode}'
-                  : '${booking.roomName ?? 'Kamar'} • ${booking.hotelRooms ?? 1} Kamar',
-              style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
-            ),
+            if (itemSubtitle.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                itemSubtitle,
+                style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+              ),
+            ],
 
             const Divider(height: 24),
 
@@ -345,8 +381,8 @@ class _MyOrdersScreenState extends State<MyOrdersScreen> with SingleTickerProvid
                                 bookingCode: booking.code,
                                 totalPrice: booking.totalPrice,
                                 type: booking.type,
-                                title: isFlight ? (booking.airline ?? 'Penerbangan') : (booking.hotelName ?? 'Hotel'),
-                                subtitle: 'Kode Booking: ${booking.code}',
+                                title: itemTitle,
+                                subtitle: itemSubtitle.isNotEmpty ? itemSubtitle : 'Kode Booking: ${booking.code}',
                               ),
                             ),
                           );

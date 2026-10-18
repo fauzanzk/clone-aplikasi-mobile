@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:traveloka_app/models/station.dart';
 import 'package:traveloka_app/models/train.dart';
 import 'package:traveloka_app/models/service_models.dart';
+import 'package:traveloka_app/models/booking.dart';
 import 'package:traveloka_app/widgets/train_card.dart';
 import 'package:traveloka_app/screens/notifications/notification_screen.dart';
 
@@ -168,6 +169,29 @@ void main() {
     expect(find.text('Pesanan & Transaksi'), findsOneWidget);
     expect(find.text('Promo & Diskon'), findsOneWidget);
     expect(find.text('E-Tiket Whoosh Siap Digunakan!'), findsOneWidget);
+  });
+
+  test('BookingModel handles service booking types properly', () {
+    final xperienceJson = {
+      'id': 10,
+      'code': 'TLB3UWJXF',
+      'type': 'XPERIENCE',
+      'total_price': 500000,
+      'status': 'PAID',
+      'payment_method': 'BCA Virtual Account',
+      'item_name': 'Dufan Ancol Theme Park',
+      'item_subtitle': 'Taman Hiburan • Jakarta Utara • 2 Tiket',
+      'service_details': {'ticket_count': 2},
+      'created_at': '2026-10-18T15:54:27.000Z',
+    };
+
+    final b = BookingModel.fromJson(xperienceJson);
+    expect(b.id, 10);
+    expect(b.type, 'XPERIENCE');
+    expect(b.itemName, 'Dufan Ancol Theme Park');
+    expect(b.itemSubtitle, 'Taman Hiburan • Jakarta Utara • 2 Tiket');
+    expect(b.isPaid, true);
+    expect(b.formattedTotalPrice, 'Rp 500.000');
   });
 }
 

@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../constants/theme.dart';
 import '../../models/service_models.dart';
 import '../../services/api_service.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/booking_provider.dart';
+import '../auth/login_screen.dart';
+import '../payment/payment_screen.dart';
 
 class XperienceScreen extends StatefulWidget {
   const XperienceScreen({super.key});
@@ -37,6 +42,7 @@ class _XperienceScreenState extends State<XperienceScreen> {
 
   void _showTicketModal(AttractionModel item) {
     int ticketCount = 1;
+    bool isBooking = false;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -100,14 +106,14 @@ class _XperienceScreenState extends State<XperienceScreen> {
                         children: [
                           IconButton(
                             icon: const Icon(Icons.remove_circle_outline, color: AppColors.primary),
-                            onPressed: ticketCount > 1
+                            onPressed: (ticketCount > 1 && !isBooking)
                                 ? () => setModalState(() => ticketCount--)
                                 : null,
                           ),
                           Text('$ticketCount', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
                           IconButton(
                             icon: const Icon(Icons.add_circle_outline, color: AppColors.primary),
-                            onPressed: ticketCount < 10
+                            onPressed: (ticketCount < 10 && !isBooking)
                                 ? () => setModalState(() => ticketCount++)
                                 : null,
                           ),
@@ -135,16 +141,74 @@ class _XperienceScreenState extends State<XperienceScreen> {
                           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
-                        onPressed: () {
-                          Navigator.pop(ctx);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('$ticketCount Tiket ${item.name} berhasil dipesan! Voucher masuk dikirim ke email.'),
-                              backgroundColor: AppColors.success,
-                            ),
-                          );
-                        },
-                        child: const Text('Beli Tiket Sekarang', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                        onPressed: isBooking
+                            ? null
+                            : () async {
+                                final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                                if (!authProvider.isLoggedIn) {
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Silakan login terlebih dahulu untuk membeli tiket Xperience.'),
+                                      backgroundColor: AppColors.warning,
+                                    ),
+                                  );
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+                                  return;
+                                }
+
+                                setModalState(() => isBooking = true);
+                                final bookingProvider = Provider.of<BookingProvider>(context, listen: false);
+                                final res = await bookingProvider.createServiceBooking(
+                                  serviceType: 'XPERIENCE',
+                                  itemName: item.name,
+                                  itemSubtitle: '${item.category} • ${item.location} • $ticketCount Tiket',
+                                  totalPrice: total,
+                                  details: {
+                                    'attraction_id': item.id,
+                                    'category': item.category,
+                                    'location': item.location,
+                                    'ticket_count': ticketCount,
+                                    'unit_price': item.price,
+                                    'image_url': item.imageUrl,
+                                  },
+                                );
+
+                                if (!mounted) return;
+                                setModalState(() => isBooking = false);
+
+                                if (res['success'] == true) {
+                                  Navigator.pop(ctx);
+                                  final bookingData = res['data'];
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => PaymentScreen(
+                                        bookingId: bookingData['booking_id'],
+                                        bookingCode: bookingData['code'],
+                                        totalPrice: double.parse(bookingData['total_price'].toString()),
+                                        type: 'XPERIENCE',
+                                        title: item.name,
+                                        subtitle: '${item.category} • ${item.location} • $ticketCount Tiket',
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(res['message'] ?? 'Gagal membuat pesanan tiket Xperience.'),
+                                      backgroundColor: AppColors.danger,
+                                    ),
+                                  );
+                                }
+                              },
+                        child: isBooking
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              )
+                            : const Text('Beli Tiket Sekarang', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
                       ),
                     ],
                   ),

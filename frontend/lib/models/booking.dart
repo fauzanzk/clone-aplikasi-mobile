@@ -38,6 +38,11 @@ class BookingModel {
   final int? hotelGuests;
   final String? guestName;
 
+  // Generic service specific (Xperience, Car Rental, Airport Transfer, Insurance)
+  final String? itemName;
+  final String? itemSubtitle;
+  final dynamic serviceDetails;
+
   final String? qrData;
 
   BookingModel({
@@ -72,6 +77,9 @@ class BookingModel {
     this.hotelRooms,
     this.hotelGuests,
     this.guestName,
+    this.itemName,
+    this.itemSubtitle,
+    this.serviceDetails,
     this.qrData,
   });
 
@@ -113,6 +121,9 @@ class BookingModel {
       hotelRooms: json['hotel_rooms'] != null ? int.parse(json['hotel_rooms'].toString()) : null,
       hotelGuests: json['hotel_guests'] != null ? int.parse(json['hotel_guests'].toString()) : null,
       guestName: json['guest_name'],
+      itemName: json['item_name'],
+      itemSubtitle: json['item_subtitle'],
+      serviceDetails: json['service_details'],
       qrData: json['qr_data'] ?? json['code'],
     );
   }

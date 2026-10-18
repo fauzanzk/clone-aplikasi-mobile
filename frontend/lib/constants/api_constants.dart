@@ -27,6 +27,7 @@ class ApiConstants {
   static const String hotelBooking = '/bookings/hotel';
   static const String trainBooking = '/bookings/train';
   static const String busBooking = '/bookings/bus';
+  static const String serviceBooking = '/bookings/service';
   static const String serviceBuses = '/services/buses';
   static const String serviceAttractions = '/services/attractions';
   static const String serviceCars = '/services/cars';

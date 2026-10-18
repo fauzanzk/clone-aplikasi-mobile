@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../constants/theme.dart';
 import '../../models/service_models.dart';
 import '../../services/api_service.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/booking_provider.dart';
+import '../auth/login_screen.dart';
+import '../payment/payment_screen.dart';
 
 class InsuranceScreen extends StatefulWidget {
   const InsuranceScreen({super.key});
@@ -35,98 +40,161 @@ class _InsuranceScreenState extends State<InsuranceScreen> {
   }
 
   void _showPurchaseSheet(InsuranceModel plan) {
+    bool isBooking = false;
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
-        return Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Text(
-                      plan.planName,
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE0F2F1),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      plan.category,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF00695C),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Text('Pertanggungan Maksimal: ${plan.formattedCoverage}',
-                  style: const TextStyle(color: Color(0xFF00695C), fontWeight: FontWeight.w700, fontSize: 13)),
-              const Divider(height: 24),
-              const Text('Manfaat Perlindungan Utama:', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-              const SizedBox(height: 8),
-              ...plan.benefits.map((b) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 3),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.check_circle, color: Color(0xFF00897B), size: 16),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(b, style: TextStyle(fontSize: 12, color: Colors.grey.shade800)),
-                        ),
-                      ],
-                    ),
-                  )),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Premi Mulai', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                      Text(
-                        plan.formattedPrice,
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.secondary),
+                      Expanded(
+                        child: Text(
+                          plan.planName,
+                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE0F2F1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          plan.category,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF00695C),
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00897B),
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Polis ${plan.planName} berhasil diaktifkan untuk perjalanan Anda!'),
-                          backgroundColor: AppColors.success,
+                  const SizedBox(height: 6),
+                  Text('Pertanggungan Maksimal: ${plan.formattedCoverage}',
+                      style: const TextStyle(color: Color(0xFF00695C), fontWeight: FontWeight.w700, fontSize: 13)),
+                  const Divider(height: 24),
+                  const Text('Manfaat Perlindungan Utama:', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                  const SizedBox(height: 8),
+                  ...plan.benefits.map((b) => Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 3),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.check_circle, color: Color(0xFF00897B), size: 16),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(b, style: TextStyle(fontSize: 12, color: Colors.grey.shade800)),
+                            ),
+                          ],
                         ),
-                      );
-                    },
-                    child: const Text('Beli Polis Asuransi', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                      )),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Premi Mulai', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                          Text(
+                            plan.formattedPrice,
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: AppColors.secondary),
+                          ),
+                        ],
+                      ),
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF00897B),
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        onPressed: isBooking
+                            ? null
+                            : () async {
+                                final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                                if (!authProvider.isLoggedIn) {
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Silakan login terlebih dahulu untuk membeli polis asuransi.'),
+                                      backgroundColor: AppColors.warning,
+                                    ),
+                                  );
+                                  Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+                                  return;
+                                }
+
+                                setSheetState(() => isBooking = true);
+                                final bookingProvider = Provider.of<BookingProvider>(context, listen: false);
+                                final subtitle = 'Perlindungan ${plan.category} • Max Cover Rp ${plan.maxCoverage.toStringAsFixed(0)}';
+                                final res = await bookingProvider.createServiceBooking(
+                                  serviceType: 'INSURANCE',
+                                  itemName: plan.planName,
+                                  itemSubtitle: subtitle,
+                                  totalPrice: plan.price,
+                                  details: {
+                                    'plan_id': plan.id,
+                                    'plan_name': plan.planName,
+                                    'category': plan.category,
+                                    'max_coverage': plan.maxCoverage,
+                                    'benefits': plan.benefits,
+                                  },
+                                );
+
+                                if (!mounted) return;
+                                setSheetState(() => isBooking = false);
+
+                                if (res['success'] == true) {
+                                  Navigator.pop(ctx);
+                                  final bookingData = res['data'];
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => PaymentScreen(
+                                        bookingId: bookingData['booking_id'],
+                                        bookingCode: bookingData['code'],
+                                        totalPrice: double.parse(bookingData['total_price'].toString()),
+                                        type: 'INSURANCE',
+                                        title: plan.planName,
+                                        subtitle: subtitle,
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(res['message'] ?? 'Gagal membuat pesanan asuransi.'),
+                                      backgroundColor: AppColors.danger,
+                                    ),
+                                  );
+                                }
+                              },
+                        child: isBooking
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                              )
+                            : const Text('Beli Polis Asuransi', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                      ),
+                    ],
                   ),
+                  const SizedBox(height: 10),
                 ],
               ),
-              const SizedBox(height: 10),
-            ],
-          ),
+            );
+          },
         );
       },
     );

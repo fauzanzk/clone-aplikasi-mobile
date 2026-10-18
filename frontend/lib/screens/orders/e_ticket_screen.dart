@@ -56,6 +56,10 @@ class _ETicketScreenState extends State<ETicketScreen> {
     final isFlight = booking.type == 'FLIGHT';
     final isTrain = booking.type == 'TRAIN';
     final isBus = booking.type == 'BUS';
+    final isXperience = booking.type == 'XPERIENCE';
+    final isCarRental = booking.type == 'CAR_RENTAL';
+    final isAirportTransfer = booking.type == 'AIRPORT_TRANSFER';
+    final isInsurance = booking.type == 'INSURANCE';
 
     String screenTitle = 'Voucher Hotel Resmi';
     Color headerBg = AppColors.secondary;
@@ -77,6 +81,26 @@ class _ETicketScreenState extends State<ETicketScreen> {
       headerBg = const Color(0xFF1E824C);
       headerIcon = Icons.directions_bus_rounded;
       screenBg = const Color(0xFF145A32);
+    } else if (isXperience) {
+      screenTitle = 'Voucher Atraksi Xperience Resmi';
+      headerBg = const Color(0xFFE91E63);
+      headerIcon = Icons.attractions_rounded;
+      screenBg = const Color(0xFFAD1457);
+    } else if (isCarRental) {
+      screenTitle = 'Voucher Sewa Mobil Resmi';
+      headerBg = const Color(0xFF0097A7);
+      headerIcon = Icons.directions_car_rounded;
+      screenBg = const Color(0xFF006064);
+    } else if (isAirportTransfer) {
+      screenTitle = 'Voucher Antar Bandara Resmi';
+      headerBg = const Color(0xFF3F51B5);
+      headerIcon = Icons.airport_shuttle_rounded;
+      screenBg = const Color(0xFF1A237E);
+    } else if (isInsurance) {
+      screenTitle = 'Polis Asuransi Perjalanan Resmi';
+      headerBg = const Color(0xFF00897B);
+      headerIcon = Icons.health_and_safety_rounded;
+      screenBg = const Color(0xFF004D40);
     }
 
     return Scaffold(
@@ -227,7 +251,11 @@ class _ETicketScreenState extends State<ETicketScreen> {
                   // Product Details
                   Padding(
                     padding: const EdgeInsets.all(20),
-                    child: (isFlight || isTrain || isBus) ? _buildFlightDetails(booking) : _buildHotelDetails(booking),
+                    child: (isFlight || isTrain || isBus)
+                        ? _buildFlightDetails(booking)
+                        : (isXperience || isCarRental || isAirportTransfer || isInsurance)
+                            ? _buildServiceDetails(booking)
+                            : _buildHotelDetails(booking),
                   ),
 
                   // QR Code Section
@@ -492,6 +520,93 @@ class _ETicketScreenState extends State<ETicketScreen> {
               ],
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildServiceDetails(BookingModel booking) {
+    final title = booking.itemName ?? booking.airline ?? 'Pesanan Layanan';
+    final subtitle = booking.itemSubtitle ?? booking.flightNo ?? '';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18),
+        ),
+        if (subtitle.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text(
+            subtitle,
+            style: const TextStyle(fontSize: 13, color: AppColors.textSecondary, height: 1.3),
+          ),
+        ],
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade200),
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Metode Pembayaran', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                  Text(
+                    booking.paymentMethod ?? 'Virtual Account',
+                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Waktu Transaksi', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                  Text(
+                    booking.formattedDate,
+                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Total Pembayaran', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                  Text(
+                    booking.formattedTotalPrice,
+                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: AppColors.secondary),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            color: Colors.green.shade50,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.verified, color: AppColors.success, size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Voucher resmi ini valid & terverifikasi langsung oleh sistem TraveLokuy.',
+                  style: TextStyle(color: Colors.green.shade800, fontSize: 11, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );

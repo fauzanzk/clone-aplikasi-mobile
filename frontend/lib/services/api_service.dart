@@ -390,6 +390,28 @@ class ApiService {
     return jsonDecode(res.body);
   }
 
+  Future<Map<String, dynamic>> createServiceBooking({
+    required String serviceType,
+    required String itemName,
+    String? itemSubtitle,
+    required double totalPrice,
+    dynamic details,
+  }) async {
+    final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.serviceBooking}');
+    final res = await http.post(
+      url,
+      headers: _headers(),
+      body: jsonEncode({
+        'service_type': serviceType,
+        'item_name': itemName,
+        if (itemSubtitle != null) 'item_subtitle': itemSubtitle,
+        'total_price': totalPrice,
+        if (details != null) 'details': details,
+      }),
+    );
+    return jsonDecode(res.body);
+  }
+
   // Other Services: Buses, Attractions, Cars, Insurances
   Future<List<BusModel>> getBuses({String? origin, String? dest}) async {
     final queryParams = <String, String>{};
