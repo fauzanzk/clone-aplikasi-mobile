@@ -1,12 +1,15 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
+import 'package:traveloka_app/providers/auth_provider.dart';
 import 'package:traveloka_app/models/station.dart';
 import 'package:traveloka_app/models/train.dart';
 import 'package:traveloka_app/models/service_models.dart';
 import 'package:traveloka_app/models/booking.dart';
 import 'package:traveloka_app/widgets/train_card.dart';
 import 'package:traveloka_app/screens/notifications/notification_screen.dart';
+import 'package:traveloka_app/screens/profile/settings_screen.dart';
 
 class _TestHttpOverrides extends HttpOverrides {
   @override
@@ -192,6 +195,26 @@ void main() {
     expect(b.itemSubtitle, 'Taman Hiburan • Jakarta Utara • 2 Tiket');
     expect(b.isPaid, true);
     expect(b.formattedTotalPrice, 'Rp 500.000');
+  });
+
+  testWidgets('SettingsScreen renders options properly', (tester) async {
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ],
+        child: const MaterialApp(
+          home: SettingsScreen(),
+        ),
+      ),
+    );
+
+    expect(find.text('Pengaturan'), findsOneWidget);
+    expect(find.text('Akun & Keamanan'), findsOneWidget);
+    expect(find.text('Preferensi Aplikasi'), findsOneWidget);
+    expect(find.text('Pengaturan Notifikasi'), findsOneWidget);
+    expect(find.text('Bahasa'), findsOneWidget);
+    expect(find.text('Mata Uang Pembayaran'), findsOneWidget);
   });
 }
 

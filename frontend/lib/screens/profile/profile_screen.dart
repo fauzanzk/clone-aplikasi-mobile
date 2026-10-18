@@ -6,6 +6,7 @@ import '../../providers/hotel_provider.dart';
 import '../../widgets/custom_button.dart';
 import '../auth/login_screen.dart';
 import '../hotels/hotel_detail_screen.dart';
+import 'settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -100,8 +101,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
           if (auth.isLoggedIn)
             IconButton(
               icon: const Icon(Icons.edit_outlined),
+              tooltip: 'Ubah Profil',
               onPressed: () => _showEditProfileModal(context),
             ),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            tooltip: 'Pengaturan',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SettingsScreen()),
+              );
+            },
+          ),
         ],
       ),
       body: SingleChildScrollView(
@@ -312,31 +323,60 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Column(
                   children: [
                     ListTile(
-                      leading: const Icon(Icons.language, color: AppColors.primary),
-                      title: const Text('Bahasa'),
-                      trailing: const Text('Bahasa Indonesia', style: TextStyle(color: Colors.grey, fontSize: 13)),
-                      onTap: () {},
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.settings_outlined, color: AppColors.primary, size: 22),
+                      ),
+                      title: const Text('Pengaturan', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                      subtitle: const Text('Bahasa, mata uang, notifikasi, keamanan, dan privasi', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                      trailing: const Icon(Icons.chevron_right, color: AppColors.primary),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                        );
+                      },
                     ),
                     const Divider(height: 1),
                     ListTile(
-                      leading: const Icon(Icons.monetization_on_outlined, color: AppColors.secondary),
-                      title: const Text('Mata Uang'),
-                      trailing: const Text('IDR (Rupiah)', style: TextStyle(color: Colors.grey, fontSize: 13)),
-                      onTap: () {},
-                    ),
-                    const Divider(height: 1),
-                    ListTile(
-                      leading: const Icon(Icons.help_outline, color: AppColors.primary),
-                      title: const Text('Pusat Bantuan & FAQ'),
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.help_outline, color: Colors.amber, size: 22),
+                      ),
+                      title: const Text('Pusat Bantuan & FAQ', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                      subtitle: const Text('Solusi cepat pertanyaan pemesanan & kendala', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
                       trailing: const Icon(Icons.chevron_right),
-                      onTap: () {},
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Pusat Bantuan: Hubungi cs@travelokuy.com atau live chat 24/7.')),
+                        );
+                      },
                     ),
                     const Divider(height: 1),
                     ListTile(
-                      leading: const Icon(Icons.info_outline, color: AppColors.primary),
-                      title: const Text('Tentang TraveLokuy App'),
-                      trailing: const Text('v1.0.0 (MVP)', style: TextStyle(color: Colors.grey, fontSize: 13)),
-                      onTap: () {},
+                      leading: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.success.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.verified_outlined, color: AppColors.success, size: 22),
+                      ),
+                      title: const Text('Tentang TraveLokuy App', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                      subtitle: const Text('Aplikasi pemesanan perjalanan terlengkap', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                      trailing: const Text('v1.0.0', style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                        );
+                      },
                     ),
                   ],
                 ),
