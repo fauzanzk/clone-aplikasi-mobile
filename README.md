@@ -6,7 +6,7 @@
 4. Neilsen Iyanaka (24051214169)
 5. Arum Fatimah A. (24051214175)
 
-# TraveLokuy (Clone Traveloka MVP)
+# TraveLokuy (Clone Traveloka)
 
 Aplikasi pemesanan tiket perjalanan (pesawat, kereta api KAI & Whoosh, bus & shuttle), reservasi hotel, serta ragam layanan wisata lengkap dengan backend REST API (Express + MySQL) dan frontend mobile/web (Flutter).
 
