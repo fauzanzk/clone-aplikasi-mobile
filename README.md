@@ -6,13 +6,13 @@
 4. Neilsen Iyanaka (24051214169)
 5. Arum Fatimah A. (24051214175)
 
-# ✈️ TraveLokuy (Clone Traveloka MVP)
+# TraveLokuy (Clone Traveloka MVP)
 
 Aplikasi pemesanan tiket pesawat dan reservasi hotel lengkap dengan backend REST API (Express + MySQL) dan frontend mobile/web (Flutter).
 
 ---
 
-## 🚀 Fitur Utama
+## Fitur Utama
 
 1. **Autentikasi (JWT & Bcrypt)**:
    - Register akun baru & Login
@@ -77,7 +77,7 @@ Aplikasi pemesanan tiket pesawat dan reservasi hotel lengkap dengan backend REST
 
 ---
 
-## 🛠️ Tech Stack & Arsitektur
+## Tech Stack & Arsitektur
 
 - **Backend**:
   - Node.js & Express
@@ -98,7 +98,7 @@ Aplikasi pemesanan tiket pesawat dan reservasi hotel lengkap dengan backend REST
 
 ---
 
-## 🗄️ Struktur Proyek
+## Struktur Proyek
 
 ```
 Traveloka/
@@ -129,7 +129,7 @@ Traveloka/
 
 ---
 
-## 💻 Cara Menjalankan
+## Cara Menjalankan
 
 ### Cara Paling Cepat (1-Klik):
 Cukup klik ganda (double-click) file **[run_app.bat](file:///d:/DataSkills/New%20folder/Traveloka/run_app.bat)** di folder utama. File ini otomatis akan membuka MySQL (3307), Server Backend (5000), dan Flutter Chrome secara berurutan.
@@ -175,7 +175,7 @@ Cukup klik ganda (double-click) file **[run_app.bat](file:///d:/DataSkills/New%2
 
 ---
 
-## 👤 Akun Pengujian Demo
+## Akun Pengujian Demo
 
 - **Email**: `budi@travelokuy.com`
 - **Password**: `password123`
