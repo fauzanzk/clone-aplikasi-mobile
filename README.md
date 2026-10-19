@@ -1,6 +1,14 @@
+# Kelompok 3 SI2024E
+
+Fauzan Zaki (24051214144)
+M. Zulfikar Wahyu P. (24051214146)
+Ihza Budi Cendhika (24051214163)
+Neilsen Iyanaka (24051214169)
+Arum Fatimah A. (24051214175)
+
 # ✈️ TraveLokuy (Clone Traveloka MVP)
 
-Aplikasi pemesanan tiket pesawat dan reservasi hotel lengkap dengan backend REST API (Express + MySQL) dan frontend mobile/web (Flutter), dirancang sesuai spesifikasi dokumen [MVP-TraveLoka.md](file:///d:/DataSkills/New%20folder/Traveloka/MVP-TraveLoka.md).
+Aplikasi pemesanan tiket pesawat dan reservasi hotel lengkap dengan backend REST API (Express + MySQL) dan frontend mobile/web (Flutter).
 
 ---
 
