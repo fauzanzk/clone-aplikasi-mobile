@@ -1,10 +1,10 @@
 # Kelompok 3 SI2024E
 
-Fauzan Zaki (24051214144)
-M. Zulfikar Wahyu P. (24051214146)
-Ihza Budi Cendhika (24051214163)
-Neilsen Iyanaka (24051214169)
-Arum Fatimah A. (24051214175)
+1. Fauzan Zaki (24051214144)
+2. M. Zulfikar Wahyu P. (24051214146)
+3. Ihza Budi Cendhika (24051214163)
+4. Neilsen Iyanaka (24051214169)
+5. Arum Fatimah A. (24051214175)
 
 # ✈️ TraveLokuy (Clone Traveloka MVP)
 
