@@ -8,22 +8,32 @@
 
 # TraveLokuy (Clone Traveloka MVP)
 
-Aplikasi pemesanan tiket pesawat dan reservasi hotel lengkap dengan backend REST API (Express + MySQL) dan frontend mobile/web (Flutter).
+Aplikasi pemesanan tiket perjalanan (pesawat, kereta api KAI & Whoosh, bus & shuttle), reservasi hotel, serta ragam layanan wisata lengkap dengan backend REST API (Express + MySQL) dan frontend mobile/web (Flutter).
 
 ---
 
 ## Fitur Utama
 
 1. **Autentikasi (JWT & Bcrypt)**:
-   - Register akun baru & Login
+   - Register akun baru & Login aman
    - Akun Demo siap pakai: `budi@travelokuy.com` (password: `password123`)
    - Profil pengguna, ubah nama/telepon, dan statistik pemesanan
 
-2. **Beranda & Promo Khas Traveloka**:
-   - Header biru ikonik (#0194F3 & #0064D2) dengan salam pengguna
-   - Menu pintas utama: **Tiket Pesawat** & **Hotel & Penginapan**
-   - Slider promo dinamis (*EPIC Sale 2026*, *Staycation Hemat*, *Diskon Maskapai*)
-   - Destinasi populer favorit di Indonesia (Bali, Yogyakarta, Jakarta, Surabaya, Bandung)
+2. **Beranda Terpadu (Home Dashboard)**:
+   - **Header Biru Ikonik & Branding TraveLokuy**: Tampilan header gradasi biru khas (`#0194F3` ke `#0064D2`) pada `SliverAppBar` responsif dengan logo pesawat dinamis.
+   - **Pusat Akses Notifikasi & Login Cepat**: Ikon lonceng notifikasi interaktif dengan indikator badge pesan belum dibaca (*unread count badge*) dan tombol pintas login bagi pengguna tamu.
+   - **Kartu Sapaan Personal (User Greeting Card)**: Avatar dinamis dengan inisial nama akun pengguna serta salam personal interaktif ("Halo, [Nama Pengguna]!" atau "Halo, Traveler!").
+   - **Grid 8 Layanan Terpadu (Unified 4x2 Services Card)**:
+     - **Tiket Pesawat**: Akses cepat pencarian dan booking penerbangan antarkota di Indonesia.
+     - **Hotel & Resort**: Reservasi hotel, resort, vila, dan apartemen favorit.
+     - **Kereta Api**: Pemesanan tiket KAI Antarkota & Whoosh Kereta Cepat Jakarta–Bandung (badge `WHOOSH`).
+     - **Bus & Travel**: Pilihan armada bus malam dan shuttle antarkota (badge `HEMAT`).
+     - **Xperience**: Tiket atraksi wisata, rekreasi keluarga, dan taman bermain (badge `DISKON`).
+     - **Rental Mobil**: Pilihan sewa mobil lepas kunci atau dengan pengemudi profesional.
+     - **Antar Bandara**: Layanan penjemputan bandara resmi (Private Car, Bluebird Taxi, DAMRI Shuttle).
+     - **Asuransi Perjalanan**: Perlindungan perjalanan terpercaya dengan lisensi OJK (badge `OJK`).
+   - **Slider Banner Visual**: Carousel gambar informatif bertema inspirasi perjalanan dan destinasi yang dapat digeser secara horizontal (*swipeable*).
+   - **Katalog Destinasi Populer Indonesia**: Galeri kartu horizontal destinasi favorit (Bali, Yogyakarta, Jakarta, Surabaya, Bandung) dengan integrasi satu-klik yang langsung mengarahkan pengguna ke pencarian akomodasi di kota tersebut.
 
 3. **Pemesanan Tiket Pesawat**:
    - Pencarian berdasarkan kota/bandara asal, tujuan, tanggal berangkat, dan jumlah penumpang
@@ -33,20 +43,13 @@ Aplikasi pemesanan tiket pesawat dan reservasi hotel lengkap dengan backend REST
    - Form data penumpang dinamis (Tn/Ny/Nn, Nama Lengkap, Nomor KTP/Paspor)
    - **Transaksi Database ACID**: Penguncian baris (`FOR UPDATE`) & pengurangan kursi secara realtime
 
-3. **Pemesanan Tiket Kereta Api (KAI & Kereta Cepat Whoosh)**:
+4. **Pemesanan Tiket Kereta Api (KAI & Kereta Cepat Whoosh)**:
    - Pencarian stasiun asal dan tujuan dengan tombol swap stasiun
    - Dukungan stasiun KAI (Gambir, Pasar Senen, Bandung, Yogyakarta, Surabaya Gubeng, Solo Balapan, Semarang Tawang) dan Whoosh (Stasiun KCIC Halim & Tegalluar)
    - Badge khusus Whoosh (Merah Crimson) dan KAI (Oranye/Biru)
    - Filter kelas kereta: Kereta Cepat (Whoosh), Eksekutif, Bisnis, Ekonomi
    - Pilihan rute populer cepat: Jakarta - Bandung (Whoosh 45 Menit), Jakarta - Yogyakarta (Taksaka), Jakarta - Surabaya (Argo Bromo Anggrek)
-   - Alur pemesanan lengkap: Pilih stasiun -> Hasil pencarian -> Form identitas NIK/KTP penumpang -> Simulasi pembayaran -> E-Tiket Boarding Pass dengan QR Code khusus stasiun
-
-4. **Layanan Transportasi & Wisata Lainnya (Lengkap Sesuai Traveloka Asli)**:
-   - **Bus & Travel / Shuttle**: Pilihan armada ternama (Rosalia Indah, Sinar Jaya, DAMRI), filter kelas sleeper & executive, dan fitur pemilihan nomor kursi bus interaktif.
-   - **TraveLokuy Xperience**: Tiket atraksi wisata & taman hiburan (Dufan Ancol, Taman Safari, Waterbom Bali, Candi Borobudur) dengan konfirmasi instan.
-   - **Rental Mobil**: Pilihan sewa mobil lepas kunci atau dengan sopir (Avanza, Innova Reborn, Fortuner, HiAce) lengkap dengan durasi hari dan kalkulasi tarif otomatis.
-   - **Antar Jemput Bandara**: Layanan penjemputan bandara resmi (CGK, HLP, DPS, SUB, YIA) dengan opsi Private Car, Premium Bluebird Taxi, dan DAMRI Airport Shuttle.
-   - **Asuransi Perjalanan (TraveLokuy Safe)**: Perbandingan polis perlindungan (Basic, Gold, Platinum) dengan pertanggungan s/d Rp 500.000.000 terdaftar OJK.
+   - Alur pemesanan lengkap: Pilih stasiun -> Hasil pencarian terfilter presisi -> Form identitas NIK/KTP penumpang -> Simulasi pembayaran -> E-Tiket Boarding Pass dengan QR Code khusus stasiun
 
 5. **Pemesanan Hotel & Resort**:
    - Pencarian kota tujuan, tanggal check-in & check-out, serta jumlah tamu & kamar
@@ -56,23 +59,36 @@ Aplikasi pemesanan tiket pesawat dan reservasi hotel lengkap dengan backend REST
    - Fitur wishlist / simpan hotel favorit
    - Form penulisan ulasan dan rating hotel 1–5 bintang
 
-6. **Simulasi Pembayaran (Payment Gateway Simulation)**:
+6. **Layanan Transportasi & Wisata Lainnya (Lengkap Sesuai Traveloka Asli)**:
+   - **Bus & Travel / Shuttle**: Pilihan armada ternama (Rosalia Indah, Sinar Jaya, DAMRI), filter kelas sleeper & executive, dan fitur pemilihan nomor kursi bus interaktif.
+   - **TraveLokuy Xperience**: Tiket atraksi wisata & taman hiburan (Dufan Ancol, Taman Safari, Waterbom Bali, Candi Borobudur) dengan konfirmasi instan.
+   - **Rental Mobil**: Pilihan sewa mobil lepas kunci atau dengan sopir (Avanza, Innova Reborn, Fortuner, HiAce) lengkap dengan durasi hari dan kalkulasi tarif otomatis.
+   - **Antar Jemput Bandara**: Layanan penjemputan bandara resmi (CGK, HLP, DPS, SUB, YIA) dengan opsi Private Car, Premium Bluebird Taxi, dan DAMRI Airport Shuttle.
+   - **Asuransi Perjalanan (TraveLokuy Safe)**: Perbandingan polis perlindungan (Basic, Gold, Platinum) dengan pertanggungan s/d Rp 500.000.000 terdaftar OJK.
+
+7. **Simulasi Pembayaran (Payment Gateway Simulation)**:
    - Pilihan metode: BCA Virtual Account, Mandiri VA, BRI VA, GoPay, OVO, Kartu Kredit
    - Countdown timer kedaluwarsa pesanan (1 jam hitung mundur)
    - Tombol sekali klik "Bayar Sekarang" yang langsung mengubah status transaksi menjadi **PAID**
 
-7. **Pesanan Saya & E-Tiket / Voucher Resmi**:
+8. **Pesanan Saya & E-Tiket / Voucher Resmi**:
    - Tab status: Semua, Menunggu Bayar (PENDING), Selesai/Aktif (PAID), Batal/Expired
    - Dukungan multi-layanan: Tiket Pesawat, Voucher Hotel, dan Tiket Kereta Api
    - Pembatalan pesanan yang otomatis mengembalikan kursi kereta/pesawat / kamar
    - Halaman E-Tiket & Voucher bergaya boarding pass dengan **Kode Booking Acak (PNR)** dan **QR Code aktif** (`qr_flutter`) untuk proses boarding/check-in
 
-8. **Pusat Notifikasi Interaktif (Notification Center)**:
+9. **Pusat Notifikasi Interaktif (Notification Center)**:
    - Ikon lonceng di AppBar beranda dengan badge jumlah notifikasi belum dibaca (*unread badge*)
-   - Tab kategori: **Semua**, **Pesanan & Transaksi**, **Promo & Diskon**, dan **Info Perjalanan**
-   - Riwayat notifikasi aktif: Status e-tiket Whoosh & Pesawat, EPIC Sale diskon promo, status pembayaran berhasil, voucher wahana Xperience, info armada bus baru, dan polis asuransi
+   - Tab kategori: **Semua**, **Pesanan & Transaksi**, **Pemberitahuan**, dan **Info Perjalanan**
+   - Riwayat notifikasi aktif: Status e-tiket Whoosh & Pesawat, status pembayaran berhasil, voucher wahana Xperience, info armada bus baru, dan polis asuransi
    - Tombol sekali klik "Tandai Dibaca" (*Mark all as read*)
    - Modal detail interaktif untuk membaca pesan lengkap notifikasi
+
+10. **Pengaturan & Preferensi Aplikasi (Settings Screen)**:
+    - Halaman pengaturan terpadu yang dapat diakses langsung dari profil pengguna
+    - **Preferensi Aplikasi**: Pilihan Bahasa antarmuka (Bahasa Indonesia & English) dan Mata Uang Pembayaran (IDR, USD, SGD, MYR)
+    - **Manajemen Notifikasi**: Pengaturan notifikasi push, info pembaruan status pesanan, dan pengingat perjalanan
+    - **Akun & Keamanan**: Informasi versi aplikasi, syarat & ketentuan, kebijakan privasi, serta akses cepat keluar akun (Logout)
 
 
 ---
