@@ -72,7 +72,9 @@ async function seed() {
     [5, 'Bandung', 'Indonesia'],
     [6, 'Makassar', 'Indonesia'],
     [7, 'Medan', 'Indonesia'],
-    [8, 'Balikpapan', 'Indonesia']
+    [8, 'Balikpapan', 'Indonesia'],
+    [9, 'Semarang', 'Indonesia'],
+    [10, 'Solo', 'Indonesia']
   ];
   for (const c of citiesData) {
     await connection.query('INSERT INTO cities (id, name, country) VALUES (?, ?, ?)', c);
@@ -439,8 +441,8 @@ async function seed() {
     [5, 'TGL', 'Stasiun Tegalluar (KCIC Whoosh)', 5, 'WHOOSH'],
     [6, 'YK', 'Stasiun Yogyakarta (Tugu)', 4, 'KAI'],
     [7, 'SGU', 'Stasiun Surabaya Gubeng', 2, 'KAI'],
-    [8, 'SLO', 'Stasiun Solo Balapan', 4, 'KAI'],
-    [9, 'SMT', 'Stasiun Semarang Tawang', 2, 'KAI']
+    [8, 'SLO', 'Stasiun Solo Balapan', 10, 'KAI'],
+    [9, 'SMT', 'Stasiun Semarang Tawang', 9, 'KAI']
   ];
   for (const s of stationsData) {
     await connection.query('INSERT INTO stations (id, code, name, city_id, type) VALUES (?, ?, ?, ?, ?)', s);
@@ -469,19 +471,51 @@ async function seed() {
     { name: 'Argo Dwipangga', no: 'KA-10', class: 'Eksekutif Luxury', orig: 1, dest: 6, depH: 8, depM: 50, durM: 380, price: 650000 },
     { name: 'Taksaka Malam', no: 'KA-70', class: 'Eksekutif', orig: 1, dest: 6, depH: 21, depM: 40, durM: 385, price: 540000 },
     { name: 'Taksaka Pagi (YK-GMR)', no: 'KA-67', class: 'Eksekutif', orig: 6, dest: 1, depH: 8, depM: 45, durM: 390, price: 540000 },
+    { name: 'Bogowonto', no: 'KA-138', class: 'Eksekutif', orig: 2, dest: 6, depH: 9, depM: 50, durM: 430, price: 340000 },
+    { name: 'Progo', no: 'KA-248', class: 'Ekonomi', orig: 2, dest: 6, depH: 22, depM: 30, durM: 450, price: 190000 },
+    { name: 'Bogowonto (YK-PSE)', no: 'KA-137', class: 'Eksekutif', orig: 6, dest: 2, depH: 9, depM: 10, durM: 430, price: 340000 },
+    { name: 'Progo (YK-PSE)', no: 'KA-247', class: 'Ekonomi', orig: 6, dest: 2, depH: 15, depM: 10, durM: 450, price: 190000 },
 
     // Jakarta <-> Surabaya
     { name: 'Argo Bromo Anggrek', no: 'KA-2', class: 'Eksekutif Luxury', orig: 1, dest: 7, depH: 8, depM: 20, durM: 490, price: 850000 },
     { name: 'Sembrani Malam', no: 'KA-64', class: 'Eksekutif', orig: 1, dest: 7, depH: 19, depM: 30, durM: 520, price: 680000 },
     { name: 'Argo Bromo Anggrek (SGU-GMR)', no: 'KA-1', class: 'Eksekutif Luxury', orig: 7, dest: 1, depH: 9, depM: 10, durM: 490, price: 850000 },
+    { name: 'Gaya Baru Malam Selatan', no: 'KA-106', class: 'Ekonomi', orig: 2, dest: 7, depH: 11, depM: 0, durM: 660, price: 240000 },
+    { name: 'Jayabaya', no: 'KA-108', class: 'Eksekutif', orig: 2, dest: 7, depH: 17, depM: 25, durM: 640, price: 420000 },
+    { name: 'Gaya Baru Malam Selatan (SGU-PSE)', no: 'KA-105', class: 'Ekonomi', orig: 7, dest: 2, depH: 12, depM: 0, durM: 660, price: 240000 },
+
+    // Jakarta <-> Semarang (SMT)
+    { name: 'Argo Sindoro', no: 'KA-11', class: 'Eksekutif', orig: 1, dest: 9, depH: 16, depM: 40, durM: 310, price: 380000 },
+    { name: 'Argo Muria', no: 'KA-13', class: 'Eksekutif Luxury', orig: 1, dest: 9, depH: 7, depM: 0, durM: 305, price: 520000 },
+    { name: 'Argo Sindoro (SMT-GMR)', no: 'KA-12', class: 'Eksekutif', orig: 9, dest: 1, depH: 6, depM: 50, durM: 310, price: 380000 },
+    { name: 'Menoreh', no: 'KA-226', class: 'Ekonomi Premium', orig: 2, dest: 9, depH: 18, depM: 50, durM: 340, price: 210000 },
+    { name: 'Menoreh (SMT-PSE)', no: 'KA-225', class: 'Ekonomi Premium', orig: 9, dest: 2, depH: 8, depM: 0, durM: 340, price: 210000 },
+
+    // Jakarta <-> Solo (SLO)
+    { name: 'Argo Lawu', no: 'KA-7', class: 'Eksekutif Luxury', orig: 1, dest: 8, depH: 20, depM: 45, durM: 420, price: 620000 },
+    { name: 'Argo Lawu (SLO-GMR)', no: 'KA-8', class: 'Eksekutif Luxury', orig: 8, dest: 1, depH: 8, depM: 30, durM: 420, price: 620000 },
+    { name: 'Fajar Utama Solo', no: 'KA-88', class: 'Ekonomi Premium', orig: 2, dest: 8, depH: 5, depM: 45, durM: 470, price: 260000 },
+    { name: 'Mataram (SLO-PSE)', no: 'KA-89', class: 'Eksekutif', orig: 8, dest: 2, depH: 18, depM: 50, durM: 460, price: 320000 },
 
     // Yogyakarta <-> Surabaya
     { name: 'Sancaka Pagi', no: 'KA-176', class: 'Ekonomi Premium', orig: 6, dest: 7, depH: 6, depM: 45, durM: 240, price: 230000 },
     { name: 'Sancaka Sore', no: 'KA-178', class: 'Eksekutif', orig: 6, dest: 7, depH: 16, depM: 40, durM: 240, price: 310000 },
+    { name: 'Sancaka Siang (SGU-YK)', no: 'KA-175', class: 'Eksekutif', orig: 7, dest: 6, depH: 9, depM: 0, durM: 240, price: 310000 },
+    { name: 'Sancaka Malam (SGU-YK)', no: 'KA-177', class: 'Ekonomi Premium', orig: 7, dest: 6, depH: 17, depM: 30, durM: 240, price: 230000 },
 
     // Bandung <-> Surabaya
     { name: 'Argo Wilis', no: 'KA-6', class: 'Eksekutif', orig: 4, dest: 7, depH: 7, depM: 45, durM: 590, price: 620000 },
-    { name: 'Turangga Malam', no: 'KA-66', class: 'Eksekutif', orig: 4, dest: 7, depH: 18, depM: 10, durM: 610, price: 580000 }
+    { name: 'Turangga Malam', no: 'KA-66', class: 'Eksekutif', orig: 4, dest: 7, depH: 18, depM: 10, durM: 610, price: 580000 },
+    { name: 'Argo Wilis (SGU-BD)', no: 'KA-5', class: 'Eksekutif', orig: 7, dest: 4, depH: 8, depM: 15, durM: 590, price: 620000 },
+    { name: 'Turangga (SGU-BD)', no: 'KA-65', class: 'Eksekutif', orig: 7, dest: 4, depH: 20, depM: 0, durM: 610, price: 580000 },
+
+    // Solo <-> Surabaya
+    { name: 'Sancaka Solo', no: 'KA-182', class: 'Eksekutif', orig: 8, dest: 7, depH: 7, depM: 30, durM: 190, price: 210000 },
+    { name: 'Sancaka Solo (SGU-SLO)', no: 'KA-181', class: 'Eksekutif', orig: 7, dest: 8, depH: 15, depM: 0, durM: 190, price: 210000 },
+
+    // Semarang <-> Surabaya
+    { name: 'Ambarawa Ekspres', no: 'KA-232', class: 'Ekonomi Premium', orig: 9, dest: 7, depH: 8, depM: 30, durM: 260, price: 130000 },
+    { name: 'Ambarawa Ekspres (SGU-SMT)', no: 'KA-231', class: 'Ekonomi Premium', orig: 7, dest: 9, depH: 13, depM: 20, durM: 260, price: 130000 }
   ];
 
   for (let day = 0; day < 14; day++) {

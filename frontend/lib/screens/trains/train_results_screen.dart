@@ -107,11 +107,13 @@ class TrainResultsScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '${trainProvider.originStation?.code ?? 'JKT'} ➔ ${trainProvider.destStation?.code ?? 'BD'}',
-              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+              '${trainProvider.originStation?.code ?? 'GMR'} ➔ ${trainProvider.destStation?.code ?? 'BD'} (${trainProvider.originStation?.cityName ?? 'Jakarta'} - ${trainProvider.destStation?.cityName ?? 'Bandung'})',
+              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
             Text(
-              '${DateFormat('d MMM', 'id_ID').format(trainProvider.departureDate)} • ${trainProvider.passengersCount} Penumpang',
+              '${DateFormat('d MMM yyyy', 'id_ID').format(trainProvider.departureDate)} • ${trainProvider.passengersCount} Penumpang',
               style: const TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
             ),
           ],

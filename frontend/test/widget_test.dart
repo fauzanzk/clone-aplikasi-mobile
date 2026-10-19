@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:traveloka_app/providers/auth_provider.dart';
+import 'package:traveloka_app/providers/train_provider.dart';
 import 'package:traveloka_app/models/station.dart';
 import 'package:traveloka_app/models/train.dart';
 import 'package:traveloka_app/models/service_models.dart';
@@ -215,6 +216,43 @@ void main() {
     expect(find.text('Pengaturan Notifikasi'), findsOneWidget);
     expect(find.text('Bahasa'), findsOneWidget);
     expect(find.text('Mata Uang Pembayaran'), findsOneWidget);
+  });
+
+  test('TrainProvider manages origin and destination stations properly', () {
+    final gmr = StationModel(
+      id: 1,
+      code: 'GMR',
+      name: 'Stasiun Gambir',
+      cityId: 1,
+      cityName: 'Jakarta',
+      country: 'Indonesia',
+      type: 'KAI',
+    );
+    final yk = StationModel(
+      id: 6,
+      code: 'YK',
+      name: 'Stasiun Yogyakarta (Tugu)',
+      cityId: 4,
+      cityName: 'Yogyakarta',
+      country: 'Indonesia',
+      type: 'KAI',
+    );
+
+    final provider = TrainProvider();
+    provider.setOriginStation(gmr);
+    provider.setDestStation(yk);
+
+    expect(provider.originStation?.code, 'GMR');
+    expect(provider.destStation?.code, 'YK');
+
+    provider.swapStations();
+    expect(provider.originStation?.code, 'YK');
+    expect(provider.destStation?.code, 'GMR');
+
+    provider.setClassFilter('Eksekutif');
+    expect(provider.selectedClass, 'Eksekutif');
+    provider.setSortBy('price_desc');
+    expect(provider.sortBy, 'price_desc');
   });
 }
 

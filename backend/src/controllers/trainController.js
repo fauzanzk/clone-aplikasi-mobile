@@ -3,12 +3,19 @@ const db = require('../config/db');
 // GET /stations - Get all train stations
 const getStations = async (req, res) => {
   try {
-    const [rows] = await db.query(`
+    const search = req.query.search;
+    let query = `
       SELECT s.id, s.code, s.name, s.type, c.id AS city_id, c.name AS city_name, c.country
       FROM stations s
       JOIN cities c ON c.id = s.city_id
-      ORDER BY s.type DESC, s.name ASC
-    `);
+    `;
+    const params = [];
+    if (search) {
+      query += ` WHERE s.name LIKE ? OR s.code LIKE ? OR c.name LIKE ?`;
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
+    query += ` ORDER BY s.type DESC, s.name ASC`;
+    const [rows] = await db.query(query, params);
     return res.json({ success: true, count: rows.length, data: rows });
   } catch (err) {
     console.error('Get stations error:', err);
@@ -19,7 +26,12 @@ const getStations = async (req, res) => {
 // GET /trains - Search trains
 const searchTrains = async (req, res) => {
   try {
-    const { origin_id, destination_id, date, class_type, sort_by } = req.query;
+    const origin = req.query.from || req.query.origin_id;
+    const dest = req.query.to || req.query.destination_id;
+    const pax = parseInt(req.query.pax || '1', 10);
+    const date = req.query.date;
+    const classType = req.query.class || req.query.class_type;
+    const sortBy = req.query.sortBy || req.query.sort_by;
 
     let query = `
       SELECT 
@@ -35,20 +47,33 @@ const searchTrains = async (req, res) => {
       JOIN cities co ON co.id = so.city_id
       JOIN stations sd ON sd.id = t.destination_id
       JOIN cities cd ON cd.id = sd.city_id
-      WHERE t.seats_available > 0
+      WHERE t.seats_available >= ?
     `;
-    const params = [];
+    const params = [pax];
 
-    if (origin_id) {
-      query += ' AND t.origin_id = ?';
-      params.push(origin_id);
+    // Filter Origin (ID, station code, station name, or city name)
+    if (origin) {
+      if (!isNaN(origin)) {
+        query += ' AND (t.origin_id = ? OR so.city_id = ?)';
+        params.push(parseInt(origin, 10), parseInt(origin, 10));
+      } else {
+        query += ' AND (so.code = ? OR LOWER(so.name) LIKE ? OR LOWER(co.name) LIKE ?)';
+        params.push(origin.toUpperCase(), `%${origin.toLowerCase()}%`, `%${origin.toLowerCase()}%`);
+      }
     }
 
-    if (destination_id) {
-      query += ' AND t.destination_id = ?';
-      params.push(destination_id);
+    // Filter Destination (ID, station code, station name, or city name)
+    if (dest) {
+      if (!isNaN(dest)) {
+        query += ' AND (t.destination_id = ? OR sd.city_id = ?)';
+        params.push(parseInt(dest, 10), parseInt(dest, 10));
+      } else {
+        query += ' AND (sd.code = ? OR LOWER(sd.name) LIKE ? OR LOWER(cd.name) LIKE ?)';
+        params.push(dest.toUpperCase(), `%${dest.toLowerCase()}%`, `%${dest.toLowerCase()}%`);
+      }
     }
 
+    // Date filter
     if (date) {
       query += ' AND DATE(t.depart_at) = ?';
       params.push(date);
@@ -56,21 +81,27 @@ const searchTrains = async (req, res) => {
       query += ' AND t.depart_at >= NOW()';
     }
 
-    if (class_type && class_type !== 'Semua') {
+    // Class filter
+    if (classType && classType !== 'Semua' && classType !== 'Semua Kelas') {
       query += ' AND t.class_type LIKE ?';
-      params.push(`%${class_type}%`);
+      params.push(`%${classType}%`);
     }
 
     // Sorting
-    switch (sort_by) {
+    switch (sortBy) {
       case 'price_asc':
         query += ' ORDER BY t.price ASC';
         break;
       case 'price_desc':
         query += ' ORDER BY t.price DESC';
         break;
+      case 'time_asc':
       case 'depart_asc':
         query += ' ORDER BY t.depart_at ASC';
+        break;
+      case 'time_desc':
+      case 'depart_desc':
+        query += ' ORDER BY t.depart_at DESC';
         break;
       case 'duration_asc':
         query += ' ORDER BY duration_minutes ASC';
