@@ -102,7 +102,7 @@ Aplikasi pemesanan tiket perjalanan (pesawat, kereta api KAI & Whoosh, bus & shu
   - CORS & Dotenv
 - **Database**:
   - MySQL / MariaDB (`traveloka_clone`)
-  - Schema terdefinisi di [schema.sql](file:///d:/DataSkills/New%20folder/Traveloka/backend/schema.sql)
+  - Schema terdefinisi di [schema.sql](file:///d:/DataSkills/New%20folder/Traveloka/schema.sql)
 - **Frontend**:
   - Flutter (Dart)
   - `provider` (State management)
@@ -120,10 +120,10 @@ Aplikasi pemesanan tiket perjalanan (pesawat, kereta api KAI & Whoosh, bus & shu
 Traveloka/
 ├── MVP-TraveLoka.md            # Panduan & spesifikasi MVP
 ├── README.md                   # Dokumentasi proyek
+├── schema.sql                  # Skema tabel MySQL lengkap
 ├── backend/
 │   ├── .env                    # Konfigurasi port, DB, dan JWT
 │   ├── package.json            # Dependencies backend
-│   ├── schema.sql              # Skema tabel MySQL lengkap
 │   └── src/
 │       ├── server.js           # Entry point Express API
 │       ├── config/db.js        # Konfigurasi MySQL connection pool

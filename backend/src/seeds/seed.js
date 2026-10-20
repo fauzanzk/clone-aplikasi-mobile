@@ -29,7 +29,11 @@ async function seed() {
   await connection.query('USE traveloka_clone;');
 
   console.log('Executing schema.sql...');
-  const schemaSql = fs.readFileSync(path.join(__dirname, '../../schema.sql'), 'utf-8');
+  let schemaPath = path.join(__dirname, '../../../schema.sql');
+  if (!fs.existsSync(schemaPath)) {
+    schemaPath = path.join(__dirname, '../../schema.sql');
+  }
+  const schemaSql = fs.readFileSync(schemaPath, 'utf-8');
   const statements = schemaSql
     .split(';')
     .map(s => s.trim())
