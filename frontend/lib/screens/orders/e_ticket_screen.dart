@@ -448,9 +448,14 @@ class _ETicketScreenState extends State<ETicketScreen> {
                   children: [
                     const Icon(Icons.person, size: 14, color: AppColors.primary),
                     const SizedBox(width: 6),
-                    Text('${p.title}. ${p.fullName}', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-                    if (p.idNumber.isNotEmpty)
-                      Text(' (${p.idNumber})', style: const TextStyle(color: Colors.grey, fontSize: 11)),
+                    Expanded(
+                      child: Text(
+                        '${p.title}. ${p.fullName}${p.idNumber.isNotEmpty ? ' (${p.idNumber})' : ''}',
+                        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ],
                 ),
               ))
@@ -503,21 +508,35 @@ class _ETicketScreenState extends State<ETicketScreen> {
         ),
         const SizedBox(height: 16),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Tipe Kamar', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                Text(booking.roomName ?? 'Deluxe Room', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-              ],
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Tipe Kamar', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                  Text(
+                    booking.roomName ?? 'Deluxe Room',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                const Text('Nama Tamu', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
-                Text(booking.guestName ?? 'Tamu', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-              ],
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  const Text('Nama Tamu', style: TextStyle(fontSize: 11, color: AppColors.textSecondary)),
+                  Text(
+                    booking.guestName ?? 'Tamu',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -557,9 +576,15 @@ class _ETicketScreenState extends State<ETicketScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('Metode Pembayaran', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                  Text(
-                    booking.paymentMethod ?? 'Virtual Account',
-                    style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      booking.paymentMethod ?? 'Virtual Account',
+                      textAlign: TextAlign.end,
+                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
@@ -568,9 +593,15 @@ class _ETicketScreenState extends State<ETicketScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('Waktu Transaksi', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                  Text(
-                    booking.formattedDate,
-                    style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      booking.formattedDate,
+                      textAlign: TextAlign.end,
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 12),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
@@ -579,9 +610,15 @@ class _ETicketScreenState extends State<ETicketScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('Total Pembayaran', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                  Text(
-                    booking.formattedTotalPrice,
-                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: AppColors.secondary),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      booking.formattedTotalPrice,
+                      textAlign: TextAlign.end,
+                      style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14, color: AppColors.secondary),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),

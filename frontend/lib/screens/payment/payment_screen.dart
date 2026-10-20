@@ -253,14 +253,60 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     Row(
                       children: [
                         Icon(
-                          widget.type == 'FLIGHT' ? Icons.flight : Icons.hotel,
-                          color: widget.type == 'FLIGHT' ? AppColors.primary : AppColors.secondary,
+                          widget.type == 'FLIGHT'
+                              ? Icons.flight
+                              : widget.type == 'TRAIN'
+                                  ? Icons.train_rounded
+                                  : widget.type == 'BUS'
+                                      ? Icons.directions_bus_rounded
+                                      : widget.type == 'CAR_RENTAL'
+                                          ? Icons.directions_car_rounded
+                                          : widget.type == 'XPERIENCE'
+                                              ? Icons.attractions_rounded
+                                              : widget.type == 'AIRPORT_TRANSFER'
+                                                  ? Icons.airport_shuttle_rounded
+                                                  : widget.type == 'INSURANCE'
+                                                      ? Icons.health_and_safety_rounded
+                                                      : Icons.hotel,
+                          color: widget.type == 'FLIGHT'
+                              ? AppColors.primary
+                              : widget.type == 'TRAIN'
+                                  ? const Color(0xFFED6B00)
+                                  : widget.type == 'BUS'
+                                      ? const Color(0xFF1E824C)
+                                      : widget.type == 'CAR_RENTAL'
+                                          ? const Color(0xFF0097A7)
+                                          : widget.type == 'XPERIENCE'
+                                              ? const Color(0xFFE91E63)
+                                              : widget.type == 'AIRPORT_TRANSFER'
+                                                  ? const Color(0xFF3F51B5)
+                                                  : widget.type == 'INSURANCE'
+                                                      ? const Color(0xFF00897B)
+                                                      : AppColors.secondary,
                           size: 20,
                         ),
                         const SizedBox(width: 8),
-                        Text(
-                          widget.type == 'FLIGHT' ? 'Tiket Pesawat' : 'Voucher Hotel',
-                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: AppColors.textSecondary),
+                        Expanded(
+                          child: Text(
+                            widget.type == 'FLIGHT'
+                                ? 'Tiket Pesawat'
+                                : widget.type == 'TRAIN'
+                                    ? 'Tiket Kereta Api'
+                                    : widget.type == 'BUS'
+                                        ? 'Tiket Bus & Travel'
+                                        : widget.type == 'CAR_RENTAL'
+                                            ? 'Sewa Mobil'
+                                            : widget.type == 'XPERIENCE'
+                                                ? 'Voucher Xperience'
+                                                : widget.type == 'AIRPORT_TRANSFER'
+                                                    ? 'Antar Jemput Bandara'
+                                                    : widget.type == 'INSURANCE'
+                                                        ? 'Asuransi Perjalanan'
+                                                        : 'Voucher Hotel',
+                            style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13, color: AppColors.textSecondary),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ],
                     ),
